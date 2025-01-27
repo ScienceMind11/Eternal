@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static net.mercury.eternal.token.TokenType.*;
 
-public final class Scanner {
+public class Scanner {
 
     private final String source;
     private final List<Token> tokens = new ArrayList<>();
