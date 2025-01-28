@@ -14,6 +14,7 @@ public class AstGenerator {
                 outputDir,
                 "Expr",
                 List.of(
+                        "Assign   : Token name, Expr value",
                         "Binary   : Expr left, Token operator, Expr right",
                         "Grouping : Expr expression",
                         "Literal  : Object value",
@@ -26,6 +27,7 @@ public class AstGenerator {
                 outputDir,
                 "Stmt",
                 List.of(
+                        "Block      : List<Stmt> statements",
                         "Expression : Expr expression",
                         "Print      : Expr expression",
                         "Var        : Token name, Expr initializer"
