@@ -16,8 +16,10 @@ public class AstGenerator {
                 List.of(
                         "Assign   : Token name, Expr value",
                         "Binary   : Expr left, Token operator, Expr right",
+                        "Call     : Expr callee, Token paren, List<Expr> arguments",
                         "Grouping : Expr expression",
                         "Literal  : Object value",
+                        "Logical  : Expr left, Token operator, Expr right",
                         "Unary    : Token operator, Expr right",
                         "Variable : Token name"
                 )
@@ -29,8 +31,10 @@ public class AstGenerator {
                 List.of(
                         "Block      : List<Stmt> statements",
                         "Expression : Expr expression",
-                        "Print      : Expr expression",
-                        "Var        : Token name, Expr initializer"
+                        "Function   : Token name, List<Token> params, List<Stmt> body",
+                        "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
+                        "Var        : Token name, Expr initializer",
+                        "While      : Expr condition, Stmt body"
                 )
         );
 
@@ -73,7 +77,7 @@ public class AstGenerator {
 
         String[] fields = fieldList.split(", ");
         for(String field : fields) {
-            writer.println("        final " + field + ";");
+            writer.println("        public final " + field + ";");
         }
 
         writer.println();

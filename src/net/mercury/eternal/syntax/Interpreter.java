@@ -3,13 +3,57 @@ package net.mercury.eternal.syntax;
 import net.mercury.eternal.Eternal;
 import net.mercury.eternal.env.Environment;
 import net.mercury.eternal.error.RuntimeError;
+import net.mercury.eternal.function.EternalCallable;
+import net.mercury.eternal.function.EternalFunction;
 import net.mercury.eternal.token.Token;
+import net.mercury.eternal.token.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
-    private Environment environment = new Environment();
+    public final Environment globals = new Environment();
+    private Environment environment = globals;
+
+    public Interpreter() {
+
+        globals.define("clock", new EternalCallable() {
+
+            @Override
+            public int arity() {
+                return 0;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                return (double) System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() { return "<native fn>"; }
+
+        });
+
+        globals.define("print", new EternalCallable() {
+
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                System.out.println(args.getFirst());
+                return null;
+            }
+
+            @Override
+            public String toString() { return "<native fn>"; }
+
+        });
+
+    }
 
     public void interpret(List<Stmt> statements) {
         try {
@@ -78,8 +122,41 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitCallExpr(Expr.Call expr) {
+        Object callee = evaluate(expr.callee);
+
+        List<Object> arguments = new ArrayList<>();
+        for(Expr argument : expr.arguments) {
+            arguments.add(evaluate(argument));
+        }
+
+        if(!(callee instanceof EternalCallable function)) {
+            throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+        }
+
+        if(arguments.size() != function.arity()) {
+            throw new RuntimeError(expr.paren, "Expected " + function.arity() + " arguments but got " + arguments.size() + ".");
+        }
+
+        return function.call(this, arguments);
+    }
+
+    @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
         return expr.value;
+    }
+
+    @Override
+    public Object visitLogicalExpr(Expr.Logical expr) {
+        Object left = evaluate(expr.left);
+
+        if(expr.operator.type == TokenType.OR) {
+            if(isTruthy(left)) return left;
+        } else {
+            if(!isTruthy(left)) return left;
+        }
+
+        return evaluate(expr.right);
     }
 
     @Override
@@ -105,6 +182,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
         return environment.get(expr.name);
+    }
+
+    @Override
+    public Void visitWhileStmt(Stmt.While stmt) {
+        while(isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body);
+        }
+        return null;
     }
 
     private void checkNumberOperand(Token operator, Object operand) {
@@ -158,9 +243,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Void visitPrintStmt(Stmt.Print stmt) {
-        Object value = evaluate(stmt.expression);
-        System.out.println(stringify(value));
+    public Void visitFunctionStmt(Stmt.Function stmt) {
+        EternalFunction function = new EternalFunction(stmt);
+        environment.define(stmt.name.lexeme, function);
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(Stmt.If stmt) {
+        if(isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else if(stmt.elseBranch != null) {
+            execute(stmt.elseBranch);
+        }
         return null;
     }
 
@@ -177,7 +272,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         stmt.accept(this);
     }
 
-    private void executeBlock(List<Stmt> statements, Environment environment) {
+    public void executeBlock(List<Stmt> statements, Environment environment) {
         Environment previous = this.environment;
         try {
             this.environment = environment;

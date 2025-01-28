@@ -7,8 +7,8 @@ public abstract class Expr {
 
     public static class Assign extends Expr {
 
-        final Token name;
-        final Expr value;
+        public final Token name;
+        public final Expr value;
 
         public Assign(Token name, Expr value) {
             this.name = name;
@@ -23,9 +23,9 @@ public abstract class Expr {
     }
     public static class Binary extends Expr {
 
-        final Expr left;
-        final Token operator;
-        final Expr right;
+        public final Expr left;
+        public final Token operator;
+        public final Expr right;
 
         public Binary(Expr left, Token operator, Expr right) {
             this.left = left;
@@ -39,9 +39,27 @@ public abstract class Expr {
         }
 
     }
+    public static class Call extends Expr {
+
+        public final Expr callee;
+        public final Token paren;
+        public final List<Expr> arguments;
+
+        public Call(Expr callee, Token paren, List<Expr> arguments) {
+            this.callee = callee;
+            this.paren = paren;
+            this.arguments = arguments;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitCallExpr(this);
+        }
+
+    }
     public static class Grouping extends Expr {
 
-        final Expr expression;
+        public final Expr expression;
 
         public Grouping(Expr expression) {
             this.expression = expression;
@@ -55,7 +73,7 @@ public abstract class Expr {
     }
     public static class Literal extends Expr {
 
-        final Object value;
+        public final Object value;
 
         public Literal(Object value) {
             this.value = value;
@@ -67,10 +85,28 @@ public abstract class Expr {
         }
 
     }
+    public static class Logical extends Expr {
+
+        public final Expr left;
+        public final Token operator;
+        public final Expr right;
+
+        public Logical(Expr left, Token operator, Expr right) {
+            this.left = left;
+            this.operator = operator;
+            this.right = right;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLogicalExpr(this);
+        }
+
+    }
     public static class Unary extends Expr {
 
-        final Token operator;
-        final Expr right;
+        public final Token operator;
+        public final Expr right;
 
         public Unary(Token operator, Expr right) {
             this.operator = operator;
@@ -85,7 +121,7 @@ public abstract class Expr {
     }
     public static class Variable extends Expr {
 
-        final Token name;
+        public final Token name;
 
         public Variable(Token name) {
             this.name = name;
@@ -101,8 +137,10 @@ public abstract class Expr {
     interface Visitor<R> {
         R visitAssignExpr(Assign expr);
         R visitBinaryExpr(Binary expr);
+        R visitCallExpr(Call expr);
         R visitGroupingExpr(Grouping expr);
         R visitLiteralExpr(Literal expr);
+        R visitLogicalExpr(Logical expr);
         R visitUnaryExpr(Unary expr);
         R visitVariableExpr(Variable expr);
     }
