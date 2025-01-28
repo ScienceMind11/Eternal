@@ -1,10 +1,7 @@
 package net.mercury.eternal;
 
 import net.mercury.eternal.error.RuntimeError;
-import net.mercury.eternal.syntax.AstPrinter;
-import net.mercury.eternal.syntax.Expr;
-import net.mercury.eternal.syntax.Interpreter;
-import net.mercury.eternal.syntax.Parser;
+import net.mercury.eternal.syntax.*;
 import net.mercury.eternal.token.Scanner;
 import net.mercury.eternal.token.Token;
 import net.mercury.eternal.token.TokenType;
@@ -63,11 +60,11 @@ public class Eternal {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        Expr expr = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         if(hadError) return;
 
-        interpreter.interpret(expr);
+        interpreter.interpret(statements);
 
     }
 

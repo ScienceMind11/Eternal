@@ -17,7 +17,18 @@ public class AstGenerator {
                         "Binary   : Expr left, Token operator, Expr right",
                         "Grouping : Expr expression",
                         "Literal  : Object value",
-                        "Unary    : Token operator, Expr right"
+                        "Unary    : Token operator, Expr right",
+                        "Variable : Token name"
+                )
+        );
+
+        defineAst(
+                outputDir,
+                "Stmt",
+                List.of(
+                        "Expression : Expr expression",
+                        "Print      : Expr expression",
+                        "Var        : Token name, Expr initializer"
                 )
         );
 

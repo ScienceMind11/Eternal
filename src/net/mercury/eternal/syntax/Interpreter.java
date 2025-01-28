@@ -1,15 +1,21 @@
 package net.mercury.eternal.syntax;
 
 import net.mercury.eternal.Eternal;
+import net.mercury.eternal.env.Environment;
 import net.mercury.eternal.error.RuntimeError;
 import net.mercury.eternal.token.Token;
 
-public class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
 
-    public void interpret(Expr expression) {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+
+    private Environment environment = new Environment();
+
+    public void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for(Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Eternal.runtimeError(error);
         }
@@ -46,8 +52,8 @@ public class Interpreter implements Expr.Visitor<Object> {
                     return (double) left + (double) right;
                 }
 
-                if(left instanceof String && right instanceof String) {
-                    return (String) left + (String) right;
+                if(left instanceof String || right instanceof String) {
+                    return left.toString() + right.toString();
                 }
 
                 throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
@@ -89,6 +95,11 @@ public class Interpreter implements Expr.Visitor<Object> {
         return null;
     }
 
+    @Override
+    public Object visitVariableExpr(Expr.Variable expr) {
+        return environment.get(expr.name);
+    }
+
     private void checkNumberOperand(Token operator, Object operand) {
         if(operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");
@@ -125,6 +136,32 @@ public class Interpreter implements Expr.Visitor<Object> {
 
     private Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Stmt.Var stmt) {
+        Object value = null;
+        if(stmt.initializer != null) value = evaluate(stmt.initializer);
+
+        environment.define(stmt.name.lexeme, value);
+        return null;
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
     }
 
 }
