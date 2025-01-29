@@ -33,6 +33,7 @@ public class AstGenerator {
                         "Expression : Expr expression",
                         "Function   : Token name, List<Token> params, List<Stmt> body",
                         "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
+                        "Return     : Token keyword, Expr value",
                         "Var        : Token name, Expr initializer",
                         "While      : Expr condition, Stmt body"
                 )
@@ -62,7 +63,7 @@ public class AstGenerator {
         defineVisitor(writer, baseName, types);
 
         writer.println();
-        writer.println("    abstract <R> R accept(Visitor<R> visitor);");
+        writer.println("    public abstract <R> R accept(Visitor<R> visitor);");
 
         writer.println();
         writer.println("}");
@@ -92,7 +93,7 @@ public class AstGenerator {
 
         writer.println();
         writer.println("        @Override");
-        writer.println("        <R> R accept(Visitor<R> visitor) {");
+        writer.println("        public <R> R accept(Visitor<R> visitor) {");
         writer.println("            return visitor.visit" + className + baseName + "(this);");
         writer.println("        }");
 
@@ -103,7 +104,7 @@ public class AstGenerator {
 
     private static void defineVisitor(PrintWriter writer, String baseName, List<String> types) {
 
-        writer.println("    interface Visitor<R> {");
+        writer.println("    public interface Visitor<R> {");
 
         for(String type : types) {
             String typeName = type.split(":")[0].trim();

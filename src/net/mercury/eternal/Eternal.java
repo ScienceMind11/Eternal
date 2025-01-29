@@ -1,5 +1,6 @@
 package net.mercury.eternal;
 
+import net.mercury.eternal.env.Resolver;
 import net.mercury.eternal.error.RuntimeError;
 import net.mercury.eternal.syntax.*;
 import net.mercury.eternal.token.Scanner;
@@ -61,6 +62,11 @@ public class Eternal {
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
         List<Stmt> statements = parser.parse();
+
+        if(hadError) return;
+
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
 
         if(hadError) return;
 

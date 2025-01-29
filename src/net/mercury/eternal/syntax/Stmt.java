@@ -14,7 +14,7 @@ public abstract class Stmt {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitBlockStmt(this);
         }
 
@@ -28,7 +28,7 @@ public abstract class Stmt {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitExpressionStmt(this);
         }
 
@@ -46,7 +46,7 @@ public abstract class Stmt {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitFunctionStmt(this);
         }
 
@@ -64,8 +64,24 @@ public abstract class Stmt {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitIfStmt(this);
+        }
+
+    }
+    public static class Return extends Stmt {
+
+        public final Token keyword;
+        public final Expr value;
+
+        public Return(Token keyword, Expr value) {
+            this.keyword = keyword;
+            this.value = value;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitReturnStmt(this);
         }
 
     }
@@ -80,7 +96,7 @@ public abstract class Stmt {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitVarStmt(this);
         }
 
@@ -96,21 +112,22 @@ public abstract class Stmt {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitWhileStmt(this);
         }
 
     }
 
-    interface Visitor<R> {
+    public interface Visitor<R> {
         R visitBlockStmt(Block stmt);
         R visitExpressionStmt(Expression stmt);
         R visitFunctionStmt(Function stmt);
         R visitIfStmt(If stmt);
+        R visitReturnStmt(Return stmt);
         R visitVarStmt(Var stmt);
         R visitWhileStmt(While stmt);
     }
 
-    abstract <R> R accept(Visitor<R> visitor);
+    public abstract <R> R accept(Visitor<R> visitor);
 
 }
