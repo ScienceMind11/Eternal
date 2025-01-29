@@ -334,7 +334,6 @@ public class Parser {
                 case IF:
                 case WHILE:
                 case RETURN:
-                case PRINT:
                     return;
             }
 

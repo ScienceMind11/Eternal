@@ -15,9 +15,6 @@ public enum TokenType {
     AND, CLASS, ELSE, FALSE, DEF, FOR, IF, NULL, OR,
     RETURN, SUPER, THIS, TRUE, VAR, WHILE,
 
-    // TO-DO: Remove once language is finished
-    PRINT,
-
     EOF
 
 }
